@@ -14,6 +14,7 @@ Se tutti i giocatori sono sincronizzati sulla stessa stanza, saranno disponibili
 
 #### Il tabellone
 Dopo aver inserito il nome è possibile cliccare su "Vai al tabellone". In questa pagina è possibile visualizzare il tabellone con i numeri estratti e, cliccando su "estrai", estrarre un numero casualmente.
+**NOVITA!** E' possibile estrarre i numeri manualmente facendo clic sul numero (e anche rimuoverlo dagli estratti).
 Selezionando la stessa stanza, è possibile aprire il tabellone su qualsiasi dispositivo e **ogni istanza aperta si sincronizzerà in automatico** con le altre: è utile per avere, per esempio, un'istanza su un proiettore o televisore e un'altra istanza su tablet, telefono o pc, per poter estrarre i numeri. Tramite il menu in basso, è possibile resettare il tabellone (e l'assegnazione delle cartelle) e disabilitare la sincronizzazione automatica (tasto "sincronizza", i numeri chiamati verranno comunque salvati su file e sincronizzati sulle altre istanze).
 Attenzione: il tabellone è pensato per funzionare su smartphone e su schermi 1080p o MacBook, se dovesse risultare troppo piccolo o sforare i bordi dello schermo, è possibile usare la funzione zoom del browser tramite la combinazione `ctrl + <rotella mouse>` o dal menù impostazioni.
 
