@@ -1,6 +1,9 @@
 var timer_update = null;
 var last_called = 0;
+var last_removed = -1;
 var ok_status = null;
+/**@type {boolean} */
+var showBtnEstrai=false;
 
 $(document).ready(function() {
     console.log('Ready!');
@@ -11,6 +14,7 @@ $(document).ready(function() {
         table += '<td><div class="number" id="number-' + i + '">' + i + '</div></td>';
         if (i % 10 == 0) table += '</tr>';
     }
+
     startUpdate();
     $('#tavola').html(table);
     $('#btnCall').click(function() {
@@ -19,6 +23,7 @@ $(document).ready(function() {
                 printNum(res.data.board.last_called.toString(), '#last-called-holder', 'big-number');
                 $('#number-' + res.data.board.last_called).addClass('called');
                 last_called = res.data.board.last_called;
+                last_removed = res.data.board.last_removed;
             } else {
                 console.log(res.message);
                 if (res.status === 'WARN') 
@@ -26,6 +31,10 @@ $(document).ready(function() {
             }
         });
     });
+    if (!showBtnEstrai) {
+        $('#btnCall').hide();
+    }
+
     $('#btnReset').click(function() {
         resetBoard(true);
     });
@@ -40,6 +49,47 @@ $(document).ready(function() {
             startUpdate();
         }
     });
+    //Applico un event Click ai numeri
+    for (let i = 1; i < 91; i++) {
+        $(`#number-${i}`).click(function (ev) {
+            ev.preventDefault();
+            let numberDom = ev.target;
+            if (numberDom && numberDom.id && numberDom.id.length != 0) {
+                let selectedNumber = numberDom.id.replace('number-','');
+                //Faccio la chiamata   
+                let endPoint = `/endpoint/board_choose_extract/?room_name=${board_options.room_slug}&choose_number=${selectedNumber}`;
+                console.log('Chiamata a '+ endPoint);
+
+                $.getJSON(endPoint, function(res) {
+                    if (res.status === 'OK') {
+                        //Numero è stato estratto correttamente
+                        if (res.data.board.last_action == 'add') {
+                            printNum(res.data.board.last_called.toString(), '#last-called-holder', 'big-number');
+                            $('#number-' + res.data.board.last_called).addClass('called');
+                            last_called = res.data.board.last_called;
+                            last_removed = res.data.board.last_removed;
+                        }
+                        else {
+                            //Ultimo chiamato
+                            last_called = res.data.board.last_called;
+                            last_removed = res.data.board.last_removed;
+                            //Tolgo la classe di riferimento
+                            console.log($('#number-' + selectedNumber));
+                            $('#number-' + selectedNumber).removeClass('called');
+                            
+                        }
+
+                    } else {
+                        console.log(res.message);
+                        if (res.status === 'WARN') 
+                            showAlert(res.message);
+                    }
+                });
+            }
+            
+            
+        });
+    };
 });
 
 // Avvia e arresta il timer di aggiornamento del tabellone
@@ -52,6 +102,22 @@ function getRoom() {
         var status = true;
 
         if (res.status === 'OK') {
+
+            //Aggiornamento tabellone ultimi numeri estratti
+            if (res.data.board.last_action == 'remove') {
+                
+                if (last_removed == res.data.board.last_removed) {
+                    last_removed = -1;
+                    //Ridisegno gli utlimi estratti
+                    $('#last-called-holder').html('');
+                    for (var i = res.data.board.called_list.length - 4; i < res.data.board.called_list.length; i++) {
+                        if (i >= 0) {
+                            printNum(res.data.board.called_list[i].toString(), '#last-called-holder', 'big-number');
+                        }
+                    }
+                }
+            }
+
             if (res.data.board.last_called != last_called) {
                 if (res.data.board.last_called == -1) resetBoard();
                 $.each(res.data.board.called_list, function(pos, num) {
@@ -98,7 +164,7 @@ function resetBoard(reset_room = false) {
 
 // Aggiunge un numero al contenitore degli ultimi numeri chiamati
 function printNum(num, container_sel, items_sel) {
-    var elem = '<div class="called-number"><div class="called-number-container">';
+    var elem = `<div class="called-number" id="cn-${num}"><div class="called-number-container">`;
     if (num < 10) elem += '<div class="' + items_sel + ' n0"></div>';
     for (var i = 0; i < num.length; i++)
         elem += '<div class="' + items_sel + ' n' + num[i] + '"></div>';
@@ -106,6 +172,8 @@ function printNum(num, container_sel, items_sel) {
     if ($(container_sel + '> div').children().length > 4)
         $(container_sel + '> div').last().remove();
 }
+
+
 
 // Swap dei pannelli a schermo
 function switchPanel(from, to) {

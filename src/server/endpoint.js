@@ -1,3 +1,11 @@
+/**
+ * @typedef {Object} Board
+ * @property {number[]} remaining_numbers - Array dei numeri rimanenti
+ * @property {number[]} called_list - Array dei numeri estratti
+ * @property {number} last_called - Ultimo numero chiamato (-1 Se non è presente)
+ * @property {'add'|'remove'|''} last_action  - Add/Remove
+ */
+
 module.exports = class Endpoint {
     /** 
      * Esegue una response con i risultati dell'elaborazione, in formato JSON
@@ -10,7 +18,7 @@ module.exports = class Endpoint {
         const Rooms = new (require('./rooms.js'));
         var the_room;
         var result = { status: 'OK', data: false, message: 'Result' };
-
+        
         switch (endpoint_name) {
             /* Seleziona o crea la stanza */
             case 'room_select':
@@ -90,6 +98,39 @@ module.exports = class Endpoint {
                     Rooms.saveRoom(params.room_name, the_room);
 
                     result.data = { board: the_room.board };
+                } else return this.sendEndpoint(res, false, 'ERR', 'La stanza non esiste');
+                break;
+
+            //Scelta di un preciso numero da estrarre
+            case 'board_choose_extract':
+                if (typeof params.room_name === 'undefined') return this.sendEndpoint(res, false, 'ERR', 'Nome della stanza obbligatorio');
+                if (typeof params.choose_number === 'undefined') return this.sendEndpoint(res, false, 'ERR', 'Numero da estrarre obbligatorio');
+                //Recupero la stanza
+                the_room = Rooms.getRoom(params.room_name);
+                //Recupero il numero
+                let chooseNumber = params.choose_number;
+
+                console.log(`Si vuole estrarre il numero ${chooseNumber}`);
+
+                if (the_room !== false) {
+                    /**@type {Board} */
+                    let gameBoard = the_room.board;
+                    if (gameBoard.remaining_numbers.length == 0) return this.sendEndpoint(res, false, 'WARN', 'Tabellone pieno');
+
+                    const Tombola = new (require('./tombola_main.js'));
+
+                    //Passo la Game Board e ritorna quella aggiornata
+                    gameBoard = Tombola.manualExtractNumber(gameBoard, parseInt(chooseNumber));
+
+                    //Applico alla Room
+                    the_room.board = gameBoard;
+
+                    //Salvo la stanza
+                    Rooms.saveRoom(params.room_name, the_room);
+                    
+                    //Ritorno la gameBoard dove è presente action per indicare se il numero è stato aggiunto o tolto
+                    result.data = { board: gameBoard };
+
                 } else return this.sendEndpoint(res, false, 'ERR', 'La stanza non esiste');
                 break;
 

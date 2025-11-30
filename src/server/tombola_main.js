@@ -3,6 +3,15 @@ module.exports = class Tombola {
         this.RandTools = require('./rand_tools.js');
     }
 
+    /**
+     * @typedef {Object} Board
+     * @property {number[]} remaining_numbers - Array dei numeri rimanenti
+     * @property {number[]} called_list - Array dei numeri estratti
+     * @property {number} last_called - Ultimo numero chiamato (-1 Se non è presente)
+     * @property {number} last_removed - Ultimo numero rimosso (-1 Nessuno)
+     * @property {'add'|'remove'|''} last_action  - Add/Remove
+     */
+
     /** 
      * Inizializza la struttura di un nuovo gioco
      * 
@@ -56,7 +65,8 @@ module.exports = class Tombola {
      * @returns {object}  Restituisce la struttura di un tabellone vuoto
      */
     genBoard () {
-        var board = { remaining_numbers: [], called_list: [], last_called: -1 };
+        /**@type {Board} */
+        var board = { remaining_numbers: [], called_list: [], last_called: -1, last_action:'', last_removed: -1};
 
         for (var i = 1; i <= 90; i++) 
             board.remaining_numbers.push(i);
@@ -114,7 +124,7 @@ module.exports = class Tombola {
     /** 
      * Estrae uno o più numeri dal tabellone
      * 
-     * @param {object} board_data   La struttura standard di un tabellone
+     * @param {Board} board_data   La struttura standard di un tabellone
      * @param {number} [count]      Numeri da estrarre (default = 1)
      * @returns {object}            Restituisce il tabellone modificato
      */
@@ -128,9 +138,49 @@ module.exports = class Tombola {
                 board_data.last_called = tools.distRandNext();
                 board_data.called_list.push(board_data.last_called);
                 board_data.remaining_numbers = tools.dist_rand;
+                board_data.last_action = 'add';
+                board_data.last_removed = -1;
             } else return board_data;
         }
 
+        return board_data;
+    }
+
+    /**
+     * Estrae o Ritira un preciso numero 
+     * @param {Board} board_data La struttura standard di un tabellone
+     * @param {number} chooseNumber numero scelto
+     * @returns {object}            Restituisce il tabellone modificato
+     */
+    manualExtractNumber(board_data, chooseNumber) {
+        
+        console.log(board_data);
+
+        //Numero è già presente - lo tolgo
+        if (board_data.called_list.includes(chooseNumber)) {
+            board_data.called_list = board_data.called_list.filter(elNumber => elNumber != chooseNumber);
+            //Lo aggiungo a quelli che rimangono
+            board_data.remaining_numbers.push(chooseNumber);
+            //Riordino i numeri rimanenti
+            board_data.remaining_numbers.sort((a, b) => a - b);
+            //Determino l'ultimo numero estratto
+            if (board_data.called_list.length == 0) {
+                board_data.last_called = -1;
+            }
+            else {
+                board_data.last_called = board_data.called_list[board_data.called_list.length-1];
+            }
+            board_data.last_action = 'remove';
+            board_data.last_removed = chooseNumber;
+        }
+        else {
+            //Posso aggiungerlo
+            board_data.last_called = chooseNumber;
+            board_data.called_list.push(chooseNumber);
+            board_data.remaining_numbers = board_data.remaining_numbers.filter(elNumber => elNumber != chooseNumber);
+            board_data.last_action = 'add';
+            board_data.last_removed = -1;
+        }
         return board_data;
     }
 }

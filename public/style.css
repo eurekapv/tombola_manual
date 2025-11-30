@@ -82,6 +82,7 @@ h1.title {
     text-align: center;
     line-height: 36px;
     transition: all .5s linear;
+    cursor: pointer;
 }
 .number.called {
     background: url('images/numero-bg.png') center;
@@ -113,6 +114,23 @@ h1.title {
     padding-top: 30px;
     width: 140px;
 }
+
+.called-number-fullscreen {
+    float: left;
+    margin: 10px;
+    width: 800px;
+    height: 800px;
+    border-radius: 150px;
+    background: url('images/numero-bg.png') center;
+    background-size: cover;
+}
+
+.called-number-container-fullscreen {
+    margin: 0 auto;
+    padding-top: 30px;
+    width: 140px;
+}
+
 .big-number {
     float: left;
     margin: 0 auto;
@@ -220,6 +238,15 @@ h1.title {
 .green { color: #63925a; }
 .red { color: #d1574a; }
 .orange { color: #e68e34; }
+
+.fullscreen-number-panel.panel {
+    position: fixed;
+    display: none;
+    top: 8%;
+    left: 50%;
+    min-height: auto;
+    max-width: 90%;
+}
 
 .alert-panel.panel {
     position: fixed;
